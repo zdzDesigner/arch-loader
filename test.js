@@ -1,8 +1,8 @@
 const expect = require('chai').expect
-const { getArchs, getArchDescrMore, getArchDescr, filterHandler, replaceContent } = require('./index.js')
+const { getArchs, getArchDescrMore, getArchDescr, parseImport, filterHandler, replaceContent } = require('./index.js')
 
 
-const one = () => {
+const multiLine = () => {
   var tpl = `<template>
   <div class="Runtime">
     <div class="Runtime-content">
@@ -27,6 +27,13 @@ const one = () => {
   console.log(imports)
   expect(imports.length).to.equal(3)
 
+  parseImport(({ module, frompath, targetpath }) => {
+    expect(module).to.equal('bridge')
+    expect(frompath).to.equal('ROOT/arch/util/bridge.js')
+    expect(targetpath).to.equal('util/bridge.js')
+    console.log({ module, frompath, targetpath })
+  }, tpl, { gadFn: getArchDescr(false), gadmFn: getArchDescrMore(false) })
+
 
   const noFile = replaceContent(imports, tpl, false, () => { throw new Error('') })
   // console.log(noFile)
@@ -37,12 +44,13 @@ const one = () => {
   // console.log(hasFile)
   expect(getArchs(false)(hasFile)).to.equal(null)
 
+
 }
-one()
+// multiLine()
 
 
 
-const two = () => {
+const mergeLine = () => {
   var tpl = `<template>
   <div class="Runtime">
     <div class="Runtime-content">
@@ -63,14 +71,42 @@ const two = () => {
 `
 
   let imports = getArchs(false)(tpl)
-  imports = imports.reduce((memo, v) => {
-    if (v.match(/\/\//g)) {
-      return memo.concat(v.split('//')[0])
-    }
-    return memo.concat(v)
-  }, [])
   console.log(imports)
   // expect(imports.length).to.equal(3)
 }
-two()
+// mergeLine()
+
+const archConfig = () => {
+  var tpl = `<template>
+  <div class="Runtime">
+    <div class="Runtime-content">
+      <!-- {{msg}} -->
+      <span v-text="text"></span>
+      <span class="var" v-text="varValue"></span>
+    </div>
+  </div>
+</template>
+
+<script charset="utf-8">
+  import bridge from 'ROOT/xxx/util/bridge.js'
+   import config from 'ROOT/xxx/config/vv.js';  // import  'ROOT/xxx/config/config.js'
+
+  import WS, { javaWSURL } from '@/components/WS.js'
+
+  export default WS({
+`
+
+  let imports = getArchs('xxx')(tpl)
+
+  parseImport(({ module, frompath, targetpath }) => {
+    expect(module).to.equal('bridge')
+    expect(frompath).to.equal('ROOT/xxx/util/bridge.js')
+    expect(targetpath).to.equal('util/bridge.js')
+    console.log(':', { module, frompath, targetpath })
+  }, tpl, { gadFn: getArchDescr('xxx'), gadmFn: getArchDescrMore('xxx') })
+
+  console.log(imports)
+  expect(imports.length).to.equal(2)
+}
+archConfig()
 

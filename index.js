@@ -4,7 +4,7 @@ const fs = require('fs')
 // 获取匹配的arch
 const getArchs = (arch) => (source) => {
   let reg = !!arch
-    ? new RegExp(`^\\s*import(.+)?['"](?<path>(?:.*\\/)*${arch}?\\/(?<target>.+))?['"]$`, 'mg')
+    ? new RegExp(`^\\s*import(.+?)['"](?<path>(?:.*?\\/)*?${arch}\\/(?<target>.+?))['"]`, 'mg')
     : /^\s*import(.+?)['"](?<path>(?:.*?\/)*?arch\/(?<target>.+?))['"]/mg
   return source.match(reg)
 }
@@ -12,7 +12,7 @@ const getArchs = (arch) => (source) => {
 // arch import 描述信息
 const getArchDescr = (arch) => (source) => {
   let reg = !!arch
-    ? new RegExp(`^\\s*import.+['"](?<path>(?:.*\\/)*${arch}?\\/(?<target>.+))?['"]$`, 'm')
+    ? new RegExp(`^\\s*import(?:.+?)['"](?<path>(?:.*?\\/)*?${arch}\\/(?<target>.+?))['"]$`, 'm')
     : /^\s*import(?:.+?)['"](?<path>(?:.*?\/)*?arch\/(?<target>.+?))['"]$/m
   return source.match(reg)
 }
@@ -20,7 +20,7 @@ const getArchDescr = (arch) => (source) => {
 // arch import 描述信息
 const getArchDescrMore = (arch) => (source) => {
   let reg = !!arch
-    ? new RegExp(`^\\s*import\\s*(?<module>.+?)\\s*from\\s*['"](?<path>(?:.*\\/)*${arch}?\\/(?<target>.+))?['"]$`, 'm')
+    ? new RegExp(`^\\s*import\\s*(?<module>.+?)\\s*from\\s*['"](?<path>(?:.*?\\/)*?${arch}\\/(?<target>.+?))['"]`, 'm')
     : /^\s*import\s*(?<module>.+?)\s*from\s*['"](?<path>(?:.*?\/)*?arch\/(?<target>.+?))['"]/m
   return source.match(reg)
 }
