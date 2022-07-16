@@ -1,0 +1,22 @@
+{
+  "name": "arch-loader",
+  "version": "0.1.0",
+  "description": "traverse project on arch",
+  "main": "index.js",
+  "files": [
+    "index.js"
+  ],
+  "scripts": {
+    "test": ""
+  },
+  "keywords": [
+    "mutil-project",
+    "webpack-loader"
+  ],
+  "author": "zdzDesigner",
+  "license": "MIT",
+  "dependencies": {},
+  "devDependencies": {
+    "chai": "^4.3.6"
+  }
+}
