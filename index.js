@@ -1,8 +1,6 @@
 const path = require('path')
 const fs = require('fs')
 
-
-
 // 获取匹配的arch
 const getArchs = (arch) => (source) => {
   let reg = !!arch
@@ -48,7 +46,7 @@ const parseImport = (join, source, matchPlugin) => {
 const getFilePath = (rootPath) => (targetpath) => {
   const targetFile = path.resolve(rootPath, `./${targetpath}`)
   if (fs.realpathSync(targetFile)) {
-    return targetpath
+    return targetFile
   }
   return ''
 }
@@ -65,7 +63,6 @@ const replaceContent = (imports, source, arch, getFilePathFn) => {
       } catch (err) {
         return `\n import ${moduleFrom} '${frompath}'`
       }
-
     }, imtpl, { gadFn, gadmFn }))
   }, source)
 }
@@ -79,12 +76,10 @@ function replace(source, inputSourceMap) {
   const imports = getArchs(arch)(source)
   if (!imports) return source
 
-
-
   const rootPath = root ? path.resolve(rootContext, root) : rootContext
   return replaceContent(imports, source, arch, getFilePath(rootPath))
-
 }
+
 module.exports = replace
 
 module.exports.parseImport = parseImport

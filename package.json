@@ -7,7 +7,7 @@
     "index.js"
   ],
   "scripts": {
-    "test": ""
+    "test": "node ./test.js"
   },
   "keywords": [
     "mutil-project",

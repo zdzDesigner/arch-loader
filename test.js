@@ -1,10 +1,8 @@
 const expect = require('chai').expect
 const { getArchs, getArchDescrMore, getArchDescr, filterHandler, replaceContent } = require('./index.js')
 
-// console.log({ getArchs, getArchDescrMore, getArchDescr, filterHandler })
 
 const one = () => {
-
   var tpl = `<template>
   <div class="Runtime">
     <div class="Runtime-content">
@@ -45,7 +43,6 @@ one()
 
 
 const two = () => {
-
   var tpl = `<template>
   <div class="Runtime">
     <div class="Runtime-content">
