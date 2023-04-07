@@ -58,7 +58,7 @@ const replaceContent = (imports, source, { arch, redirect }, getFilePathFn) => {
     try {
       return `\n import ${moduleFrom} '${getFilePathFn(targetpath)}'`
     } catch (err) {
-      if (redirect != '') {
+      if (!!redirect) {
         return `\n import ${moduleFrom} '${redirect}/${targetpath}'`
       }
       return `\n import ${moduleFrom} '${frompath}'`
