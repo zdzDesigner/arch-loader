@@ -18,5 +18,16 @@
   "dependencies": {},
   "devDependencies": {
     "chai": "^4.3.6"
+  },
+  "prettier": {
+    "printWidth": 160,
+    "arrowParens": "always",
+    "singleQuote": true,
+    "bracketSpacing": true,
+    "endOfLine": "lf",
+    "semi": false,
+    "tabWidth": 2,
+    "trailingComma": "none",
+    "bracket-same-line": true
   }
 }

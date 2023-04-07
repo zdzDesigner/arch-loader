@@ -5,7 +5,7 @@ const fs = require('fs')
 const getArchs = (arch) => (source) => {
   let reg = !!arch
     ? new RegExp(`^\\s*import(.+?)['"](?<path>(?:.*?\\/)*?${arch}\\/(?<target>.+?))['"]`, 'mg')
-    : /^\s*import(.+?)['"](?<path>(?:.*?\/)*?arch\/(?<target>.+?))['"]/mg
+    : /^\s*import(.+?)['"](?<path>(?:.*?\/)*?arch\/(?<target>.+?))['"]/gm
   return source.match(reg)
 }
 
@@ -25,22 +25,20 @@ const getArchDescrMore = (arch) => (source) => {
   return source.match(reg)
 }
 
-
 // 解析arch import内容
-const parseImport = (join, source, matchPlugin) => {
+const parseImport = (join, matchPlugin) => (source) => {
   const { gadFn, gadmFn } = matchPlugin
   let matchs = []
-  if (matchs = gadmFn(source)) {
+  if ((matchs = gadmFn(source))) {
     const { module, path, target } = matchs.groups
     return join({ module, frompath: path, targetpath: target })
   }
-  if (matchs = gadFn(source)) {
+  if ((matchs = gadFn(source))) {
     const { path, target } = matchs.groups
     return join({ module: '', frompath: path, targetpath: target })
   }
   return {}
 }
-
 
 // 文件存在 (string,string)=>string
 const getFilePath = (rootPath) => (targetpath) => {
@@ -48,36 +46,43 @@ const getFilePath = (rootPath) => (targetpath) => {
   if (fs.realpathSync(targetFile)) {
     return targetFile
   }
-  return ''
 }
 
 // 替换arch import内容
-const replaceContent = (imports, source, arch, getFilePathFn) => {
+const replaceContent = (imports, source, { arch, redirect }, getFilePathFn) => {
   const gadFn = getArchDescr(arch)
   const gadmFn = getArchDescrMore(arch)
-  return imports.reduce((memo, imtpl) => {
-    return memo.replace(imtpl, parseImport(({ module, frompath, targetpath }) => {
-      const moduleFrom = module ? `${module} from` : ''
-      try {
-        return `\n import ${moduleFrom} '${getFilePathFn(targetpath)}'`
-      } catch (err) {
-        return `\n import ${moduleFrom} '${frompath}'`
+  const join = ({ module, frompath, targetpath }) => {
+    const moduleFrom = module ? `${module} from` : ''
+
+    try {
+      return `\n import ${moduleFrom} '${getFilePathFn(targetpath)}'`
+    } catch (err) {
+      if (redirect != '') {
+        return `\n import ${moduleFrom} '${redirect}/${targetpath}'`
       }
-    }, imtpl, { gadFn, gadmFn }))
+      return `\n import ${moduleFrom} '${frompath}'`
+    }
+  }
+  return imports.reduce((memo, imtpl) => {
+    return memo.replace(imtpl, parseImport(join, { gadFn, gadmFn })(imtpl))
   }, source)
 }
 
-
 // 替换内容
 function replace(source, inputSourceMap) {
-  const { resourcePath, rootContext, query: { root, arch, type } } = this
+  const {
+    resourcePath,
+    rootContext,
+    query: { root, arch, type, redirect }
+  } = this
   if (type && path.extname(resourcePath).replace('.', '') != type) return source
 
   const imports = getArchs(arch)(source)
   if (!imports) return source
 
   const rootPath = root ? path.resolve(rootContext, root) : rootContext
-  return replaceContent(imports, source, arch, getFilePath(rootPath))
+  return replaceContent(imports, source, { arch, redirect }, getFilePath(rootPath))
 }
 
 module.exports = replace
@@ -87,5 +92,3 @@ module.exports.getArchDescr = getArchDescr
 module.exports.getArchs = getArchs
 module.exports.getArchDescrMore = getArchDescrMore
 module.exports.replaceContent = replaceContent
-
-
