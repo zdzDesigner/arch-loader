@@ -1,5 +1,6 @@
 const path = require('path')
 const fs = require('fs')
+// const map = new Map()
 
 // 获取匹配的arch
 const getArchs = (arch) => (source) => {
@@ -41,26 +42,57 @@ const parseImport = (join, matchPlugin) => (source) => {
 }
 
 // 文件存在 (string,string)=>string
-const getFilePath = (rootPath) => (targetpath) => {
+const getFilePath = (rootPath, targetpath) => {
   const targetFile = path.resolve(rootPath, `./${targetpath}`)
-  if (fs.realpathSync(targetFile)) {
+  if (fs.existsSync(targetFile)) {
     return targetFile
+  }
+  throw new Error('not found file')
+
+  // if (fs.realpathSync(targetFile)) {
+  //   return targetFile
+  // }
+}
+
+// 递归文件目录node_modules中的monorepo 项目
+const requireTry = (rootPath, filepath) => {
+  if (!rootPath) return false
+  try {
+    // console.log(`${rootPath}/node_modules`, filepath)
+    return getFilePath(`${rootPath}/node_modules`, filepath)
+  } catch (err) {
+    // console.log(rootPath, filepath)
+    return requireTry(rootPath.split(path.sep).slice(0, -1).join(path.sep), filepath)
+  }
+}
+
+// 查询依赖树
+const requireDependencies = (dependencies, fn) => {
+  let i = dependencies.length
+  while (i >= 0) {
+    const redirect = fn(dependencies[i])
+    if (redirect) return redirect
+    i--
   }
 }
 
 // 替换arch import内容
-const replaceContent = (imports, source, { arch, redirect }, getFilePathFn) => {
+const replaceContent = (imports, source, { rootPath, arch, dependencies }) => {
   const gadFn = getArchDescr(arch)
   const gadmFn = getArchDescrMore(arch)
   const join = ({ module, frompath, targetpath }) => {
     const moduleFrom = module ? `${module} from` : ''
 
     try {
-      return `\n import ${moduleFrom} '${getFilePathFn(targetpath)}'`
+      return `\n import ${moduleFrom} '${getFilePath(rootPath, targetpath)}'`
     } catch (err) {
-      if (!!redirect) {
-        return `\n import ${moduleFrom} '${redirect}/${targetpath}'`
-      }
+      if (!dependencies) return `\n import ${moduleFrom} '${frompath}'`
+
+      const targetfile = requireDependencies(dependencies, (redirect) => requireTry(rootPath, `${redirect}/${targetpath}`))
+      // console.log({ targetfile })
+      if (targetfile) return `\n import ${moduleFrom} '${targetfile}'`
+
+      // 兜底
       return `\n import ${moduleFrom} '${frompath}'`
     }
   }
@@ -70,22 +102,33 @@ const replaceContent = (imports, source, { arch, redirect }, getFilePathFn) => {
 }
 
 // 替换内容
-function replace(source, inputSourceMap) {
+function replace(source, callback) {
   const {
     resourcePath,
     rootContext,
-    query: { root, arch, type, redirect }
+    query: { root, arch, type, dependencies }
   } = this
-  if (type && path.extname(resourcePath).replace('.', '') != type) return source
+
+  if (type && path.extname(resourcePath).replace('.', '') != type) return callback(null, source)
 
   const imports = getArchs(arch)(source)
-  if (!imports) return source
+  if (!imports) return callback(null, source)
+  // if (map.has(resourcePath)) map.get(resourcePath)
 
   const rootPath = root ? path.resolve(rootContext, root) : rootContext
-  return replaceContent(imports, source, { arch, redirect }, getFilePath(rootPath))
+  const ret = replaceContent(imports, source, { rootPath, arch, dependencies })
+  // map.set(resourcePath, ret)
+  return callback(null, ret)
 }
 
-module.exports = replace
+function replaceAsync(source) {
+  var callback = this.async()
+  // callback(null, replace.bind(this)(source))
+  replace.bind(this)(source, callback)
+}
+
+// module.exports = replace
+module.exports = replaceAsync
 
 module.exports.parseImport = parseImport
 module.exports.getArchDescr = getArchDescr
