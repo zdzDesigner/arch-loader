@@ -121,3 +121,6 @@ console.log('little cap!!!')
 ## history
 - v0.3.0
   添加dependencies 
+- v0.3.1
+  fix windows path error
+

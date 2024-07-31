@@ -45,7 +45,7 @@ const parseImport = (join, matchPlugin) => (source) => {
 const getFilePath = (rootPath, targetpath) => {
   const targetFile = path.resolve(rootPath, `./${targetpath}`)
   if (fs.existsSync(targetFile)) {
-    return targetFile
+    return targetFile.replace(/\\/g, '/')
   }
   throw new Error('not found file')
 
