@@ -1,6 +1,6 @@
 {
   "name": "arch-loader",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "description": "traverse project on arch",
   "main": "dist/index.js",
   "module": "dist/index.esm.js",

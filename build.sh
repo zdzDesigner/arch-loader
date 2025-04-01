@@ -1,7 +1,8 @@
 #!/bin/bash
 
 ## ts to js
-bun build  index.ts --target node --outfile dist/index.esm.js --format esm
-bun build  index.ts --target node --outfile dist/index.js     --format cjs
-tsc index.ts --declaration --outDir ./dist
+bun build  index.ts --outfile dist/index.esm.js --format esm --target node 
+bun build  index.ts --outfile dist/index.js --format cjs --target node 
+# 只生成d.ts文件
+tsc index.ts --emitDeclarationOnly  --declaration --outDir ./dist
 
