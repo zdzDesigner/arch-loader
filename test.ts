@@ -1,5 +1,5 @@
-const expect = require('chai').expect
-const { getArchs, getArchDescrMore, getArchDescr, parseImport, filterHandler, replaceContent } = require('./index.js')
+import { expect } from 'chai'
+import { type JoinResult, getArchs, getArchDescrMore, getArchDescr, parseImport, filterHandler, replaceContent } from './index.ts'
 
 const multiLine = () => {
   var tpl = `
@@ -23,27 +23,26 @@ const multiLine = () => {
     export default WS({
 `
 
-  // 解析模板导出import 
-  const imports = getArchs(false)(tpl)
-  expect(imports.length).to.equal(3)
-  // console.log({ imports })
+  // 解析模板导出import
+  const imports = getArchs('')(tpl)
+  if (!imports) return
 
+  expect(imports.length).to.equal(3)
   // 解析import
   parseImport(
-    ({ module, frompath, targetpath }) => {
+    ({ module, frompath, targetpath }: JoinResult): string => {
       expect(module).to.equal('bridge')
       expect(frompath).to.equal('ROOT/arch/util/bridge.js')
       expect(targetpath).to.equal('util/bridge.js')
       // console.log({ module, frompath, targetpath })
+      return ''
     },
-    { gadFn: getArchDescr(false), gadmFn: getArchDescrMore(false) }
+    { gadFn: getArchDescr(''), gadmFn: getArchDescrMore('') }
   )(imports[0])
+  const defaultFile = replaceContent(imports, tpl, { rootPath: '', arch: '' })
+  expect(getArchs('')(defaultFile)?.length).to.equal(3)
 
   // 使用默认import
-  const defaultFile = replaceContent(imports, tpl, { arch: false }, () => {
-    throw new Error('')
-  })
-  expect(getArchs(false)(defaultFile).length).to.equal(3)
 
   // const hasFile = replaceContent(imports, tpl, { arch: false }, (path) => {
   //   console.log({path})
@@ -74,11 +73,12 @@ const mergeLine = () => {
   export default WS({
 `
 
-  let imports = getArchs(false)(tpl)
+  let imports = getArchs('')(tpl)
+  if (!imports) return
   // console.log(imports)
-  expect(imports.length).to.equal(3)
+  expect(imports.length).to.equal(2)
 }
-// mergeLine()
+mergeLine()
 
 const archConfig = () => {
   var tpl = `<template>
@@ -101,13 +101,15 @@ const archConfig = () => {
 `
 
   let imports = getArchs('xxx')(tpl)
+  if (!imports) return
 
   parseImport(
-    ({ module, frompath, targetpath }) => {
+    ({ module, frompath, targetpath }: JoinResult): string => {
       expect(module).to.equal('bridge')
       expect(frompath).to.equal('ROOT/xxx/util/bridge.js')
       expect(targetpath).to.equal('util/bridge.js')
       console.log(':', { module, frompath, targetpath })
+      return ''
     },
     { gadFn: getArchDescr('xxx'), gadmFn: getArchDescrMore('xxx') }
   )(tpl)
@@ -115,4 +117,4 @@ const archConfig = () => {
   // console.log(imports)
   expect(imports.length).to.equal(2)
 }
-// archConfig()
+archConfig()

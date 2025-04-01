@@ -1,23 +1,32 @@
 {
   "name": "arch-loader",
-  "version": "0.3.1",
+  "version": "0.4.0",
   "description": "traverse project on arch",
-  "main": "index.js",
+  "main": "dist/index.js",
+  "module": "dist/index.esm.js",
+  "exports": {
+    "import": "./dist/index.esm.js",
+    "default": "./dist/index.js"
+  },
   "files": [
-    "index.js"
+    "dist",
+    "!dist/**/*.map",
+    "README.md"
   ],
   "scripts": {
-    "test": "node ./test.js"
+    "test": "bun ./test.ts"
   },
   "keywords": [
     "mutil-project",
-    "webpack-loader"
+    "webpack-loader",
+    "rollup-plugin"
   ],
   "author": "zdzDesigner",
   "license": "MIT",
   "dependencies": {},
   "devDependencies": {
-    "chai": "^4.3.6"
+    "chai": "^4.3.6",
+    "@types/bun": "latest"
   },
   "prettier": {
     "printWidth": 160,
@@ -29,5 +38,8 @@
     "tabWidth": 2,
     "trailingComma": "none",
     "bracket-same-line": true
+  },
+  "peerDependencies": {
+    "typescript": "^5.0.0"
   }
 }
